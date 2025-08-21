@@ -3,11 +3,19 @@ html
   head
     title Main Page
   body
-    h1 Login/Register Page
+    if user
+        div Welcome #{user.id}!
+        br
+    else
+        h1(name="main-title") Please Login...
     br
-    a(href="/login")
-      button Login
-    br
-    br
-    a(href="/signup")
-      button Signup
+    if !user
+        a(href="/login")
+          button Login
+        br
+        br
+        a(href="/signup") 
+          button Signup
+    else
+        a(href="/logout")
+          button Logout

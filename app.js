@@ -21,8 +21,19 @@ app.use(session({
 
 var Users = [];
 
+function isAdmin(req, res, next){
+    if(req.session.user){
+        next();
+    }
+    else{
+        res.send("You are not allowed.");
+    }
+}
+
 app.get("/", function(req,res){
-    res.render("main");
+    res.render("main", {
+        user: req.session.user
+    });
 })
 
 app.get("/signup", function (req, res) {
@@ -31,18 +42,17 @@ app.get("/signup", function (req, res) {
 
 app.post("/signup", function (req, res) {
     if (!req.body.id || !req.body.password) {
-        res.status("400");
+        res.status(400);
         res.send("Id and password can not be empty.");
     }
     else {
         const userFound = Users.find((user) => user.id === req.body.id);
         if (userFound !== undefined) {
-            return res.send("User already exist!!!");
+            res.send("User already exist!!!");
         }
         else {
-            var newUser = { id: req.body.id, password: req.body.password };
+            var newUser = { id: req.body.id, password: req.body.password, authenticationLevel: req.body.level};
             Users.push(newUser);
-            req.session.user = newUser;
         }
     }
     let userListHtml = `<h2>All users:</h2><ul>`;
@@ -50,6 +60,13 @@ app.post("/signup", function (req, res) {
         userListHtml += `<li>${user.id}</li>`;
     })
     userListHtml += `</ul>`;
+
+    userListHtml += `
+        <script>
+            setTimeout(() => { window.location.href = "/"; }, 2000);
+        </script>
+    `;
+
     res.send(userListHtml);
 });
 
@@ -61,7 +78,8 @@ app.post("/login", function(req, res){
     const userFind = Users.find((user) => req.body.id === user.id);
     if(userFind !== undefined){
         if(userFind.password === req.body.password){
-            res.send(`Welcome!!!`);
+            req.session.user = userFind;
+            res.redirect("/");
         }
         else{
             res.send("Wrong password.");
@@ -70,6 +88,17 @@ app.post("/login", function(req, res){
     else{
         res.send("No user found in this id.");
     }
+})
+
+app.get("/logout", function(req, res){
+    req.session.destroy(function(err){
+        if(err){
+            console.log(err);
+        }
+        else{
+            res.redirect("/");
+        }
+    });
 })
 
 app.listen(3000); 
