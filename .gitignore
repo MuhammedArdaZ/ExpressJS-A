@@ -1,7 +1,3 @@
-node-modules
+node_modules/
 
 .DS_Store
-
-node_modules/connect-flash
-
-node_modules/.package-lock.json
